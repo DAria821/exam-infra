@@ -1,0 +1,87 @@
+services:
+
+  # ── HashiCorp Vault (Secret Manager) ──────────────────────
+  vault:
+    image: hashicorp/vault:latest
+    container_name: exam-vault
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "root"
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "8200:8200"
+    networks:
+      - exam-net
+
+  # ── Flask Web Application ─────────────────────────────────
+  app:
+    build: ./app
+    container_name: exam-app
+    environment:
+      VAULT_ADDR: "http://vault:8200"
+      VAULT_TOKEN: "root"
+    depends_on:
+      - vault
+    networks:
+      - exam-net
+    restart: unless-stopped
+
+  # ── Nginx Reverse Proxy ───────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: exam-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+    networks:
+      - exam-net
+
+  # ── Node Exporter (VM metrics) ────────────────────────────
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: exam-node-exporter
+    pid: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - exam-net
+
+  # ── Prometheus (Metrics Collection) ──────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: exam-prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - exam-net
+
+  # ── Grafana (Visualization) ───────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: exam-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - exam-net
+
+networks:
+  exam-net:
+    driver: bridge
