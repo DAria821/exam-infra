@@ -17,7 +17,9 @@ systemctl enable --now docker
 
 echo "==> [3/5] Cloning repository..."
 rm -rf /opt/exam-infra
-git clone https://github.com/DAria821/exam-infra.git /opt/exam-infra
+wget -qO /tmp/exam.tar.gz https://github.com/DAria821/exam-infra/archive/refs/heads/main.tar.gz
+tar -xzf /tmp/exam.tar.gz -C /opt/
+mv /opt/exam-infra-main /opt/exam-infra
 cd /opt/exam-infra
 
 echo "==> [4/5] Starting all services..."
