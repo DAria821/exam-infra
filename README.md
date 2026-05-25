@@ -9,7 +9,7 @@
 After accessing the VM via SSH:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/USER/exam-infra/main/bootstrap.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/DAria821/exam-infra/main/bootstrap.sh | sudo bash
 ```
 
 That's it. The bootstrap script handles everything:
