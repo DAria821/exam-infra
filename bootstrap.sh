@@ -17,7 +17,7 @@ systemctl enable --now docker
 
 echo "==> [3/5] Cloning repository..."
 rm -rf /opt/exam-infra
-git clone https://github.com/USER/exam-infra.git /opt/exam-infra
+git clone https://github.com/DAria821/exam-infra.git /opt/exam-infra
 cd /opt/exam-infra
 
 echo "==> [4/5] Starting all services..."
